@@ -26,7 +26,7 @@ struct HSGRHeader
 static_assert(sizeof(HSGRHeader) == 12, "HSGRHeader is not packed");
 
 // Returns the checksum and the number of nodes and number of edges
-HSGRHeader readHSGRHeader(boost::filesystem::ifstream &input_stream)
+inline HSGRHeader readHSGRHeader(boost::filesystem::ifstream &input_stream)
 {
     const util::FingerPrint fingerprint_valid = util::FingerPrint::GetValid();
     util::FingerPrint fingerprint_loaded;
@@ -48,8 +48,7 @@ HSGRHeader readHSGRHeader(boost::filesystem::ifstream &input_stream)
     return header;
 }
 
-// Needs to be called after readHSGRHeader() to get the correct offset in the stream
-//
+// Needs to be called after HSGRHeader() to get the correct offset in the stream
 template <typename NodeT, typename EdgeT>
 void readHSGR(boost::filesystem::ifstream &input_stream,
               NodeT *node_buffer,
@@ -75,7 +74,6 @@ void readTimestamp(boost::filesystem::ifstream &timestamp_input_stream, char *ti
 {
     timestamp_input_stream.read(timestamp, timestamp_length * sizeof(char));
 }
-
 
 }
 }
