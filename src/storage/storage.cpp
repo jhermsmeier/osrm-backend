@@ -1,4 +1,5 @@
 #include "storage/storage.hpp"
+#include "storage/io.hpp"
 #include "contractor/query_edge.hpp"
 #include "extractor/compressed_edge_container.hpp"
 #include "extractor/guidance/turn_instruction.hpp"
@@ -189,37 +190,12 @@ int Storage::Run()
         throw util::exception("Could not open " + config.hsgr_data_path.string() + " for reading.");
     }
 
-    util::FingerPrint fingerprint_valid = util::FingerPrint::GetValid();
-    util::FingerPrint fingerprint_loaded;
-    hsgr_input_stream.read((char *)&fingerprint_loaded, sizeof(util::FingerPrint));
-    if (fingerprint_loaded.TestGraphUtil(fingerprint_valid))
-    {
-        util::SimpleLogger().Write(logDEBUG) << "Fingerprint checked out ok";
-    }
-    else
-    {
-        util::SimpleLogger().Write(logWARNING) << ".hsgr was prepared with different build. "
-                                                  "Reprocess to get rid of this warning.";
-    }
-
-    // load checksum
-    unsigned checksum = 0;
-    hsgr_input_stream.read((char *)&checksum, sizeof(unsigned));
+    auto hsgr_header = io::readHSGRHeader(hsgr_input_stream);
     shared_layout_ptr->SetBlockSize<unsigned>(SharedDataLayout::HSGR_CHECKSUM, 1);
-    // load graph node size
-    unsigned number_of_graph_nodes = 0;
-    hsgr_input_stream.read((char *)&number_of_graph_nodes, sizeof(unsigned));
-
-    BOOST_ASSERT_MSG((0 != number_of_graph_nodes), "number of nodes is zero");
     shared_layout_ptr->SetBlockSize<QueryGraph::NodeArrayEntry>(SharedDataLayout::GRAPH_NODE_LIST,
-                                                                number_of_graph_nodes);
-
-    // load graph edge size
-    unsigned number_of_graph_edges = 0;
-    hsgr_input_stream.read((char *)&number_of_graph_edges, sizeof(unsigned));
-    // BOOST_ASSERT_MSG(0 != number_of_graph_edges, "number of graph edges is zero");
+                                                                hsgr_header.number_of_nodes);
     shared_layout_ptr->SetBlockSize<QueryGraph::EdgeArrayEntry>(SharedDataLayout::GRAPH_EDGE_LIST,
-                                                                number_of_graph_edges);
+                                                                hsgr_header.number_of_edges);
 
     // load rsearch tree size
     boost::filesystem::ifstream tree_node_file(config.ram_index_path, std::ios::binary);
@@ -414,7 +390,7 @@ int Storage::Run()
     // hsgr checksum
     unsigned *checksum_ptr = shared_layout_ptr->GetBlockPtr<unsigned, true>(
         shared_memory_ptr, SharedDataLayout::HSGR_CHECKSUM);
-    *checksum_ptr = checksum;
+    *checksum_ptr = hsgr_header.checksum;
 
     // ram index file name
     char *file_index_path_ptr = shared_layout_ptr->GetBlockPtr<char, true>(
@@ -666,21 +642,17 @@ int Storage::Run()
     QueryGraph::NodeArrayEntry *graph_node_list_ptr =
         shared_layout_ptr->GetBlockPtr<QueryGraph::NodeArrayEntry, true>(
             shared_memory_ptr, SharedDataLayout::GRAPH_NODE_LIST);
-    if (shared_layout_ptr->GetBlockSize(SharedDataLayout::GRAPH_NODE_LIST) > 0)
-    {
-        hsgr_input_stream.read((char *)graph_node_list_ptr,
-                               shared_layout_ptr->GetBlockSize(SharedDataLayout::GRAPH_NODE_LIST));
-    }
 
     // load the edges of the search graph
     QueryGraph::EdgeArrayEntry *graph_edge_list_ptr =
         shared_layout_ptr->GetBlockPtr<QueryGraph::EdgeArrayEntry, true>(
             shared_memory_ptr, SharedDataLayout::GRAPH_EDGE_LIST);
-    if (shared_layout_ptr->GetBlockSize(SharedDataLayout::GRAPH_EDGE_LIST) > 0)
-    {
-        hsgr_input_stream.read((char *)graph_edge_list_ptr,
-                               shared_layout_ptr->GetBlockSize(SharedDataLayout::GRAPH_EDGE_LIST));
-    }
+
+    io::readHSGR(hsgr_input_stream,
+                 graph_node_list_ptr,
+                 hsgr_header.number_of_nodes,
+                 graph_edge_list_ptr,
+                 hsgr_header.number_of_edges);
     hsgr_input_stream.close();
 
     // load profile properties
