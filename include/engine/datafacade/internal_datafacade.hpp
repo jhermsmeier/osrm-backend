@@ -140,12 +140,17 @@ class InternalDataFacade final : public BaseDataFacade
     void LoadTimestamp(const boost::filesystem::path &timestamp_path)
     {
         util::SimpleLogger().Write() << "Loading Timestamp";
+
         boost::filesystem::ifstream timestamp_stream(timestamp_path);
         if (!timestamp_stream)
         {
             throw util::exception("Could not open " + timestamp_path.string() + " for reading.");
         }
-        getline(timestamp_stream, m_timestamp);
+
+        std::size_t timestamp_size = storage::io::readTimestampSize(timestamp_stream);
+        char * timestamp_ptr = new char[timestamp_size]();
+        storage::io::readTimestamp(timestamp_stream, timestamp_ptr, timestamp_size);
+        m_timestamp = std::string(timestamp_ptr);
     }
 
     void LoadGraph(const boost::filesystem::path &hsgr_path)

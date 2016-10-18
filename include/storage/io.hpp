@@ -61,6 +61,22 @@ void readHSGR(boost::filesystem::ifstream &input_stream,
     input_stream.read(reinterpret_cast<char *>(edge_buffer), number_of_edges * sizeof(EdgeT));
 }
 
+// Returns the size of the timestamp in a file
+std::size_t readTimestampSize(boost::filesystem::ifstream &timestamp_input_stream)
+{
+    timestamp_input_stream.seekg (0, timestamp_input_stream.end);
+    auto length = timestamp_input_stream.tellg();
+    timestamp_input_stream.seekg (0, timestamp_input_stream.beg);
+    return length;
+}
+
+// Reads the timestamp in a file
+void readTimestamp(boost::filesystem::ifstream &timestamp_input_stream, char *timestamp, std::size_t timestamp_length)
+{
+    timestamp_input_stream.read(timestamp, timestamp_length * sizeof(char));
+}
+
+
 }
 }
 }
