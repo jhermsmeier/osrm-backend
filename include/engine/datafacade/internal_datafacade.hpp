@@ -13,8 +13,8 @@
 #include "extractor/original_edge_data.hpp"
 #include "extractor/profile_properties.hpp"
 #include "extractor/query_node.hpp"
-#include "storage/storage_config.hpp"
 #include "storage/io.hpp"
+#include "storage/storage_config.hpp"
 #include "engine/geospatial_query.hpp"
 #include "util/graph_loader.hpp"
 #include "util/guidance/turn_lanes.hpp"
@@ -148,7 +148,7 @@ class InternalDataFacade final : public BaseDataFacade
         }
 
         auto timestamp_size = storage::io::readTimestampSize(timestamp_stream);
-        char * timestamp_ptr = new char[timestamp_size]();
+        char *timestamp_ptr = new char[timestamp_size]();
         storage::io::readTimestamp(timestamp_stream, timestamp_ptr, timestamp_size);
         m_timestamp = std::string(timestamp_ptr);
     }

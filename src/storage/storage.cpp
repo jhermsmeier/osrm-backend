@@ -772,7 +772,6 @@ Storage::ReturnCode Storage::Run(int max_wait)
         static_cast<SharedDataTimestamp *>(data_type_memory->Ptr());
 
     {
-
             boost::interprocess::scoped_lock<boost::interprocess::named_upgradable_mutex>
             current_regions_exclusive_lock;
 
@@ -802,7 +801,6 @@ Storage::ReturnCode Storage::Run(int max_wait)
         }
 
         util::SimpleLogger().Write() << "Ok.";
-
         data_timestamp_ptr->layout = layout_region;
         data_timestamp_ptr->data = data_region;
         data_timestamp_ptr->timestamp += 1;
