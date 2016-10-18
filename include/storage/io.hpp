@@ -61,7 +61,7 @@ void readHSGR(boost::filesystem::ifstream &input_stream,
 }
 
 // Returns the size of the timestamp in a file
-std::size_t readTimestampSize(boost::filesystem::ifstream &timestamp_input_stream)
+std::uint32_t readTimestampSize(boost::filesystem::ifstream &timestamp_input_stream)
 {
     timestamp_input_stream.seekg (0, timestamp_input_stream.end);
     auto length = timestamp_input_stream.tellg();

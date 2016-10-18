@@ -147,7 +147,7 @@ class InternalDataFacade final : public BaseDataFacade
             throw util::exception("Could not open " + timestamp_path.string() + " for reading.");
         }
 
-        std::size_t timestamp_size = storage::io::readTimestampSize(timestamp_stream);
+        auto timestamp_size = storage::io::readTimestampSize(timestamp_stream);
         char * timestamp_ptr = new char[timestamp_size]();
         storage::io::readTimestamp(timestamp_stream, timestamp_ptr, timestamp_size);
         m_timestamp = std::string(timestamp_ptr);
