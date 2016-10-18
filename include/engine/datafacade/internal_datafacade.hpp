@@ -71,7 +71,6 @@ class InternalDataFacade final : public BaseDataFacade
     InternalDataFacade() {}
 
     unsigned m_check_sum;
-    unsigned m_number_of_nodes;
     std::unique_ptr<QueryGraph> m_query_graph;
     std::string m_timestamp;
 

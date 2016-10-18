@@ -48,8 +48,8 @@ HSGRHeader readHSGRHeader(boost::filesystem::ifstream &input_stream)
     return header;
 }
 
-// Needs to be called after getHSGRSize() to get the correct offset in the stream
-// 
+// Needs to be called after readHSGRHeader() to get the correct offset in the stream
+//
 template <typename NodeT, typename EdgeT>
 void readHSGR(boost::filesystem::ifstream &input_stream,
               NodeT *node_buffer,
