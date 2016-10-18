@@ -3,6 +3,7 @@ local find_access_tag = require("lib/access").find_access_tag
 local get_destination = require("lib/destination").get_destination
 local set_classification = require("lib/guidance").set_classification
 local get_turn_lanes = require("lib/guidance").get_turn_lanes
+local canonicalize_spaces = require("lib/stringlist").canonicalize_spaces
 
 -- Begin of globals
 barrier_whitelist = { ["cattle_grid"] = true, ["border_control"] = true, ["checkpoint"] = true, ["toll_booth"] = true, ["sally_port"] = true, ["gate"] = true, ["lift_gate"] = true, ["no"] = true, ["entrance"] = true }
@@ -444,7 +445,7 @@ function way_function (way, result)
   end
 
   if has_ref then
-    result.ref = ref
+    result.ref = canonicalize_spaces(ref, ";")
   end
 
   if has_pronunciation then
@@ -508,7 +509,9 @@ function way_function (way, result)
       local destination = get_destination(way)
       local has_destination = destination and "" ~= destination
 
-      result.destinations = destination
+      if has_destination then
+        result.destinations = canonicalize_spaces(destination)
+      end
     end
   end
 
